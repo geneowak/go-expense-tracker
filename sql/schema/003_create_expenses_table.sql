@@ -5,6 +5,7 @@ CREATE TABLE expenses(
     category_name varchar(255) NOT NULL,
     quantity int NOT NULL,
     unit_cost int NOT NULL,
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL
 );

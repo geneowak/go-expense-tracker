@@ -17,6 +17,7 @@ type Expense struct {
 	CategoryName string    `json:"category_name"`
 	Quantity     int32     `json:"quantity"`
 	UnitCost     int32     `json:"unit_cost"`
+	UserID       uuid.UUID `json:"user_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
