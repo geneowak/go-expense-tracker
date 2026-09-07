@@ -10,6 +10,8 @@ func SetupServer(cfg *ApiConfig, filePathRoot, port string) *http.Server {
 
 	mux.HandleFunc("POST /api/users", cfg.handleCreateUser)
 
+	mux.HandleFunc("POST /api/login", cfg.handleLogin)
+
 	return &http.Server{
 		Addr:         ":" + port,
 		Handler:      mux,
