@@ -59,6 +59,31 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (E
 	return i, err
 }
 
+const getExpenseById = `-- name: GetExpenseById :one
+SELECT
+    id, item_name, category_name, quantity, unit_cost, user_id, created_at, updated_at
+FROM
+    expenses
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetExpenseById(ctx context.Context, id uuid.UUID) (Expense, error) {
+	row := q.db.QueryRowContext(ctx, getExpenseById, id)
+	var i Expense
+	err := row.Scan(
+		&i.ID,
+		&i.ItemName,
+		&i.CategoryName,
+		&i.Quantity,
+		&i.UnitCost,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getExpenses = `-- name: GetExpenses :many
 SELECT
     id, item_name, category_name, quantity, unit_cost, user_id, created_at, updated_at
@@ -96,4 +121,48 @@ func (q *Queries) GetExpenses(ctx context.Context) ([]Expense, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateExpense = `-- name: UpdateExpense :one
+UPDATE
+    expenses
+SET
+    item_name = $1,
+    category_name = $2,
+    quantity = $3,
+    unit_cost = $4
+WHERE
+    id = $5
+RETURNING
+    id, item_name, category_name, quantity, unit_cost, user_id, created_at, updated_at
+`
+
+type UpdateExpenseParams struct {
+	ItemName     string    `json:"item_name"`
+	CategoryName string    `json:"category_name"`
+	Quantity     int32     `json:"quantity"`
+	UnitCost     int32     `json:"unit_cost"`
+	ID           uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (Expense, error) {
+	row := q.db.QueryRowContext(ctx, updateExpense,
+		arg.ItemName,
+		arg.CategoryName,
+		arg.Quantity,
+		arg.UnitCost,
+		arg.ID,
+	)
+	var i Expense
+	err := row.Scan(
+		&i.ID,
+		&i.ItemName,
+		&i.CategoryName,
+		&i.Quantity,
+		&i.UnitCost,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

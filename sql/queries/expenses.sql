@@ -20,3 +20,24 @@ SELECT
     *
 FROM
     expenses;
+
+-- name: GetExpenseById :one
+SELECT
+    *
+FROM
+    expenses
+WHERE
+    id = $1;
+
+-- name: UpdateExpense :one
+UPDATE
+    expenses
+SET
+    item_name = $1,
+    category_name = $2,
+    quantity = $3,
+    unit_cost = $4
+WHERE
+    id = $5
+RETURNING
+    *;
