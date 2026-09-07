@@ -10,7 +10,7 @@ func SetupServer(cfg *ApiConfig, filePathRoot, port string) *http.Server {
 
 	mux.HandleFunc("POST /api/users", cfg.handleCreateUser)
 
-	mux.HandleFunc("POST /api/expenses", cfg.handleCreateExpense)
+	mux.HandleFunc("POST /api/expenses", cfg.middlewareAuth(cfg.handleCreateExpense))
 
 	mux.HandleFunc("POST /api/login", cfg.handleLogin)
 

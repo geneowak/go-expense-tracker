@@ -7,7 +7,28 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const checkUserId = `-- name: CheckUserId :one
+SELECT
+    EXISTS(
+        SELECT
+            1
+        FROM
+            users
+        WHERE
+            id = $1
+    )
+`
+
+func (q *Queries) CheckUserId(ctx context.Context, id uuid.UUID) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkUserId, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO

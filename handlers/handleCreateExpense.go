@@ -15,7 +15,7 @@ type createExpenseRequest struct {
 	UnitCost     string `json:"unit_cost" validate:"required,number,min=1"`
 }
 
-func (cfg *ApiConfig) handleCreateExpense(w http.ResponseWriter, r *http.Request, authUser database.User) {
+func (cfg *ApiConfig) handleCreateExpense(w http.ResponseWriter, r *http.Request) {
 	var req createExpenseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
@@ -31,12 +31,18 @@ func (cfg *ApiConfig) handleCreateExpense(w http.ResponseWriter, r *http.Request
 	quantity, _ := strconv.Atoi(req.Quantity)
 	unitCost, _ := strconv.Atoi(req.UnitCost)
 
+	userId, err := UserIdFromContext(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Invalid user id", err)
+		return
+	}
+
 	expense, err := cfg.DB.CreateExpense(r.Context(), database.CreateExpenseParams{
 		ItemName:     req.ItemName,
 		CategoryName: req.CategoryName,
 		Quantity:     int32(quantity),
 		UnitCost:     int32(unitCost),
-		UserID:       authUser.ID,
+		UserID:       userId,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating expense", err)
