@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"reflect"
+	"strings"
 
 	"github.com/geneowak/go-expense-tracker/handlers"
 	"github.com/geneowak/go-expense-tracker/internal/database"
@@ -36,12 +38,20 @@ func main() {
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		port = envPort
 	}
-	/** we use a single instance of this because of
+	/** we use a single validate instance of this because of
 	* 1. heavy initialization cost
 	* 2. it is thread safe and so can be used simultaneously
 	* 3. when we add custom registrations, they'll be carried through to all users
 	**/
 	validate := validator.New(validator.WithRequiredStructEnabled())
+	// update the validator to return the json field name instead of the struct name
+	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
+		name, _, _ := strings.Cut(field.Tag.Get("json"), ",")
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
 
 	cfg := handlers.ApiConfig{
 		DB:        database.New(db),

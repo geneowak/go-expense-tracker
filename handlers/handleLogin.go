@@ -7,13 +7,12 @@ import (
 
 	"github.com/geneowak/go-expense-tracker/internal/auth"
 	"github.com/geneowak/go-expense-tracker/internal/database"
-	"github.com/go-playground/validator/v10"
 )
 
 func (cfg *ApiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	type loginRequest struct {
-		Password string `json:"password" validate:"required,email"`
-		Email    string `json:"email" validate:"required,alphanum,min=5"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,alphanum,min=5"`
 	}
 
 	var params loginRequest
@@ -23,7 +22,7 @@ func (cfg *ApiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := cfg.Validate.Struct(params); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Failed validation", err)
+		handleValidationErrors(w, err)
 		return
 	}
 
