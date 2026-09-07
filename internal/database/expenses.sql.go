@@ -58,3 +58,42 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (E
 	)
 	return i, err
 }
+
+const getExpenses = `-- name: GetExpenses :many
+SELECT
+    id, item_name, category_name, quantity, unit_cost, user_id, created_at, updated_at
+FROM
+    expenses
+`
+
+func (q *Queries) GetExpenses(ctx context.Context) ([]Expense, error) {
+	rows, err := q.db.QueryContext(ctx, getExpenses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Expense
+	for rows.Next() {
+		var i Expense
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemName,
+			&i.CategoryName,
+			&i.Quantity,
+			&i.UnitCost,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

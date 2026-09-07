@@ -14,3 +14,9 @@ VALUES
     (uuidv7(), $1, $2, $3, $4, $5, NOW(), NOW())
 RETURNING
     *;
+
+-- name: GetExpenses :many
+SELECT
+    *
+FROM
+    expenses;
