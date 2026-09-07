@@ -10,17 +10,20 @@ import (
 
 func (cfg *ApiConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	type createUserRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,alphanum,min=5"`
 	}
 
 	var params createUserRequest
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&params)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return
 	}
+	if err := cfg.Validate.Struct(params); err != nil {
+		handleValidationErrors(w, err)
+		return
+	}
+
 	hash, err := auth.HashPassword(params.Password)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to hash password", err)
