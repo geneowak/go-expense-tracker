@@ -22,8 +22,7 @@ func (cfg *ApiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(params); err != nil {
+	if err := cfg.Validate.Struct(params); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Failed validation", err)
 		return
 	}
