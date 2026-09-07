@@ -11,6 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type Expense struct {
+	ID           uuid.UUID `json:"id"`
+	ItemName     string    `json:"item_name"`
+	CategoryName string    `json:"category_name"`
+	Quantity     int32     `json:"quantity"`
+	UnitCost     int32     `json:"unit_cost"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 type RefreshToken struct {
 	Token     string       `json:"token"`
 	UserID    uuid.UUID    `json:"user_id"`
