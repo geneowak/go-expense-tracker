@@ -130,7 +130,8 @@ SET
     item_name = $1,
     category_name = $2,
     quantity = $3,
-    unit_cost = $4
+    unit_cost = $4,
+    updated_at = NOW()
 WHERE
     id = $5
 RETURNING

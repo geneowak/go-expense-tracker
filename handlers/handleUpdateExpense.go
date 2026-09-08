@@ -37,12 +37,9 @@ func (cfg *ApiConfig) handleUpdateExpense(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	log.Println("Looking for expense of id:", expenseId)
 	// get the expense and make sure that the user owns it
 	expense, err := cfg.DB.GetExpenseById(r.Context(), expenseId)
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Println("gotten this error:", err.Error())
-
+	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
 			respondWithError(w, http.StatusNotFound, "Expense not found", err)
 			return
