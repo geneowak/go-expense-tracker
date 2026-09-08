@@ -10,5 +10,5 @@
   - [ ] Last 3 months
   - [ ] Custom (to specify a start and end date of your choosing).
 - [x] Add a new expense
-- [ ] Remove existing expenses
+- [x] Remove existing expenses
 - [x] Update existing expenses

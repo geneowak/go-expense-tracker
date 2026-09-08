@@ -42,3 +42,9 @@ WHERE
     id = $5
 RETURNING
     *;
+
+-- name: DeleteExpense :exec
+DELETE FROM
+    expenses
+WHERE
+    id = $1;

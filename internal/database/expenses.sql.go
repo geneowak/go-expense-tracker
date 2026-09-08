@@ -59,6 +59,18 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (E
 	return i, err
 }
 
+const deleteExpense = `-- name: DeleteExpense :exec
+DELETE FROM
+    expenses
+WHERE
+    id = $1
+`
+
+func (q *Queries) DeleteExpense(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteExpense, id)
+	return err
+}
+
 const getExpenseById = `-- name: GetExpenseById :one
 SELECT
     id, item_name, category_name, quantity, unit_cost, user_id, created_at, updated_at
