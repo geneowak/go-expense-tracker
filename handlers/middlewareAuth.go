@@ -14,17 +14,17 @@ func (cfg *ApiConfig) middlewareAuth(next http.HandlerFunc) http.HandlerFunc {
 		// do the auth stuff here
 		token, err := auth.GetBearerToken(r.Header)
 		if err != nil {
-			respondWithError(w, http.StatusUnauthorized, "Couldn't find JWT", err)
+			respondWithError(w, http.StatusUnauthorized, "Unauthorized", err)
 			return
 		}
 		userId, err := auth.ValidateJWT(token, cfg.JwtSecret)
 		if err != nil {
-			respondWithError(w, http.StatusUnauthorized, "Couldn't validate JWT", err)
+			respondWithError(w, http.StatusUnauthorized, "Unauthorized", err)
 			return
 		}
 		// ensure that the user id exists in our db
 		if exists, err := cfg.DB.CheckUserId(r.Context(), userId); err != nil || !exists {
-			respondWithError(w, http.StatusUnauthorized, "Couldn't validate JWT", err)
+			respondWithError(w, http.StatusUnauthorized, "Unauthorized", err)
 			return
 		}
 

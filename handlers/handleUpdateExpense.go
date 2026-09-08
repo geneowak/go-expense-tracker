@@ -73,5 +73,5 @@ func (cfg *ApiConfig) handleUpdateExpense(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, updatedExpense)
+	respondWithJSON(w, http.StatusOK, updatedExpense)
 }

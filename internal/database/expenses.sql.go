@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -101,10 +102,26 @@ SELECT
     id, item_name, category_name, quantity, unit_cost, user_id, created_at, updated_at
 FROM
     expenses
+WHERE
+    (
+        $1::timestamptz IS NULL
+        OR created_at >= $1
+    )
+    AND (
+        $2::timestamptz IS NULL
+        OR created_at <= $2
+    )
+ORDER BY
+    created_at DESC
 `
 
-func (q *Queries) GetExpenses(ctx context.Context) ([]Expense, error) {
-	rows, err := q.db.QueryContext(ctx, getExpenses)
+type GetExpensesParams struct {
+	StartDate sql.NullTime `json:"start_date"`
+	EndDate   sql.NullTime `json:"end_date"`
+}
+
+func (q *Queries) GetExpenses(ctx context.Context, arg GetExpensesParams) ([]Expense, error) {
+	rows, err := q.db.QueryContext(ctx, getExpenses, arg.StartDate, arg.EndDate)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,18 @@ RETURNING
 SELECT
     *
 FROM
-    expenses;
+    expenses
+WHERE
+    (
+        sqlc.narg('start_date')::timestamptz IS NULL
+        OR created_at >= sqlc.narg('start_date')
+    )
+    AND (
+        sqlc.narg('end_date')::timestamptz IS NULL
+        OR created_at <= sqlc.narg('end_date')
+    )
+ORDER BY
+    created_at DESC;
 
 -- name: GetExpenseById :one
 SELECT
