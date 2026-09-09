@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 	"time"
 
@@ -17,30 +18,15 @@ const (
 	FilterCustom      DateFilter = "custom"
 )
 
-//	type getExpensesRequest struct {
-//		Filter    DateFilter `json:"filter" validate:"omitempty,oneof=past_week past_month, past_3_months, custom"`
-//		StartDate *time.Time `json:"start_date" validate:"datetime,required_if=filter custom,omitempty"`
-//		EndDate   *time.Time `json:"end_date" validate:"datetime,required_if=filter custom,gtfield=start_date,omitempty"`
-//	}
 type getExpensesRequest struct {
-	Filter    DateFilter `json:"filter" validate:"omitempty,oneof=past_week past_month past_3_months custom"`
-	StartDate string     `json:"start_date" validate:"omitempty,datetime,required_if=filter custom"`
-	EndDate   string     `json:"end_date" validate:"omitempty,datetime,required_if=filter custom,gtfield=start_date"`
+	Filter    DateFilter `json:"filter" validate:"omitempty,oneof=past_week past_month, past_3_months, custom"`
+	StartDate *time.Time `json:"start_date" validate:"datetime,required_if=filter custom,omitempty"`
+	EndDate   *time.Time `json:"end_date" validate:"datetime,required_if=filter custom,gtfield=start_date,omitempty"`
 }
 
 func (cfg *ApiConfig) handleGetExpenses(w http.ResponseWriter, r *http.Request) {
-	req := getExpensesRequest{
-		Filter:    DateFilter(r.URL.Query().Get("filter")),
-		StartDate: r.URL.Query().Get("start_date"),
-		EndDate:   r.URL.Query().Get("end_date"),
-	}
 
-	if err := cfg.Validate.Struct(req); err != nil {
-		handleValidationErrors(w, err)
-		return
-	}
-
-	startDate, endDate := getTimeRange(req)
+	startDate, endDate, err := getTimeRange(r)
 
 	expenses, err := cfg.DB.GetExpenses(r.Context(), database.GetExpensesParams{
 		StartDate: sql.NullTime{Time: startDate, Valid: true},
@@ -54,12 +40,18 @@ func (cfg *ApiConfig) handleGetExpenses(w http.ResponseWriter, r *http.Request) 
 	respondWithJSON(w, http.StatusOK, expenses)
 }
 
-func getTimeRange(req getExpensesRequest) (time.Time, time.Time) {
+func getTimeRange(r *http.Request) (time.Time, time.Time, error) {
+	filter := DateFilter(r.URL.Query().Get("filter"))
+
+	if filter == "" {
+		filter = FilterPastWeek
+	}
+
 	now := time.Now().UTC()
 	endDate := now
 	var startDate time.Time
 
-	switch req.Filter {
+	switch filter {
 	case FilterPastWeek:
 		startDate = now.AddDate(0, 0, -7)
 	case FilterPastMonth:
@@ -67,6 +59,8 @@ func getTimeRange(req getExpensesRequest) (time.Time, time.Time) {
 	case FilterPast3Months:
 		startDate = now.AddDate(0, -3, 0)
 	case FilterCustom:
+		rawStart := r.URL.Query().Get("start_date")
+		rawEnde := r.URL.Query().Get("end_date")
 		startDate = now.AddDate(0, -3, 0)
 		// startDate = *req.StartDate
 		// endDate = *req.EndDate
